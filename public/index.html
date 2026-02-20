@@ -675,9 +675,10 @@
       .cd-block { min-width: 56px; }
       .cd-num { font-size: 28px; }
       .cd-sep { font-size: 28px; }
-      .stats-strip { flex-direction: column; }
-      .stat-item { border-right: none; border-bottom: 1px solid var(--border); padding: 12px 16px; }
-      .stat-item:last-child { border-bottom: none; }
+      .stats-strip { flex-direction: row; }
+      .stat-item { padding: 12px 8px; }
+      .stat-val { font-size: 14px; }
+      .stat-label { font-size: 8px; }
       .section { padding: 48px 20px; }
       .activity-row { padding: 12px 16px; }
       .activity-left { gap: 10px; }
@@ -706,10 +707,6 @@
   <nav>
     <div class="nav-left">
       <div class="logo">Fortuna</div>
-      <div class="live-badge">
-        <span class="pulse-dot"></span>
-        <span>Live</span>
-      </div>
     </div>
     <div class="nav-right">
       <a href="#activity">Activity</a>
@@ -779,8 +776,7 @@
   <section class="section" id="activity">
     <div class="activity-header">
       <div class="activity-title">
-        <span class="pulse-dot"></span>
-        <span>Live Activity</span>
+        <span>Activity</span>
       </div>
       <div class="activity-count" id="activityCount"></div>
     </div>
