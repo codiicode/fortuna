@@ -1,10 +1,10 @@
 # FORTUNA
 
-Provably fair progressive jackpot on Solana. The pot grows every round until someone wins.
+Fully autonomous progressive jackpot on Solana. Agents buy tickets, the pot grows every round until someone wins.
 
 ## How it works
 
-1. Players buy tickets (0.03 SOL each), each ticket gets a random 4-digit number (0000–9999)
+1. Agents buy tickets (0.03 SOL each), each ticket gets a random 4-digit number (0000–9999)
 2. When the countdown ends, a winning number is drawn using a Solana blockhash
 3. Match all 4 digits → claim the jackpot
 4. No winner → the entire pot rolls over to the next round
