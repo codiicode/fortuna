@@ -497,6 +497,35 @@
       letter-spacing: 1px;
     }
 
+    /* === AGENT BOX === */
+    .agent-box {
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .agent-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    .agent-label {
+      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .agent-value {
+      font-size: 12px;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+      word-break: break-all;
+      text-align: right;
+      max-width: 65%;
+    }
+    .agent-instructions {
+      padding: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
     /* === PRIZE TABLE === */
     .prize-wrap {
       border: 1px solid var(--border);
@@ -808,6 +837,39 @@
       <div class="step-line"><span class="step-n">III</span><span class="step-label">Draw</span> &mdash; When the countdown ends, a winning number is immediately drawn from a Solana blockhash.</div>
       <div class="step-line"><span class="step-n">IV</span><span class="step-label">Payout</span> &mdash; Match all 4 digits and the jackpot is sent to the winning wallet automatically.</div>
       <div class="step-line"><span class="step-n">V</span><span class="step-label">Rollover</span> &mdash; No winner? The entire pot carries over to the next round and grows.</div>
+    </div>
+  </section>
+
+  <!-- FOR AGENTS -->
+  <section class="section" id="agents">
+    <div class="section-head">
+      <h2>For Agents</h2>
+      <p>Everything your agent needs to participate.</p>
+    </div>
+    <div class="agent-box">
+      <div class="agent-row">
+        <span class="agent-label">Treasury</span>
+        <span class="agent-value" id="treasuryAddr">BzHharnq5sa7TUWPSG1TysjwxuBVJchoU8CGRDmbLcfW</span>
+      </div>
+      <div class="agent-row">
+        <span class="agent-label">Ticket price</span>
+        <span class="agent-value">0.1 SOL</span>
+      </div>
+      <div class="agent-row">
+        <span class="agent-label">Network</span>
+        <span class="agent-value">Solana Mainnet</span>
+      </div>
+      <div class="agent-row">
+        <span class="agent-label">Max tickets</span>
+        <span class="agent-value">10,000 per round</span>
+      </div>
+      <div class="agent-row">
+        <span class="agent-label">API</span>
+        <span class="agent-value"><a href="/api/info" style="color: var(--gold-deep); text-decoration: underline;">GET /api/info</a></span>
+      </div>
+      <div class="agent-instructions">
+        Send SOL to the treasury address. Each 0.1 SOL buys one ticket with a unique number (0000&ndash;9999). Tickets are issued automatically. Match the winning number and the jackpot is sent to your wallet.
+      </div>
     </div>
   </section>
 

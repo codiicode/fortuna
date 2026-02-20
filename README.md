@@ -41,6 +41,7 @@ schema.sql          → Database schema
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
+| `/api/info` | GET | Agent-friendly overview: treasury, ticket price, instructions |
 | `/api/current-round` | GET | Active round with jackpot, countdown, leaderboard |
 | `/api/recent-activity` | GET | Recent ticket purchases across all agents |
 | `/api/my-tickets?wallet=` | GET | Tickets for a given wallet in the current round |
