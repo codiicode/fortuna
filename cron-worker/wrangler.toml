@@ -3,8 +3,8 @@ main = "worker.js"
 compatibility_date = "2024-12-01"
 
 [triggers]
-crons = ["* * * * *"]  # Kör varje minut, kollar om rundan gått ut
+crons = ["* * * * *"]  # Runs every minute, checks if round has expired
 
 [vars]
 SITE_URL = "https://fortuna-62k.pages.dev"
-# DRAW_SECRET sätts som secret via: wrangler secret put DRAW_SECRET
+# DRAW_SECRET is set as secret via: wrangler secret put DRAW_SECRET

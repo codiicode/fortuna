@@ -28,6 +28,6 @@ CREATE INDEX idx_tickets_wallet ON tickets(wallet_address);
 CREATE INDEX idx_tickets_number ON tickets(round_id, ticket_number);
 CREATE INDEX idx_rounds_status ON rounds(status);
 
--- Seed: första rundan (10 min som test)
+-- Seed: first round (10 min test)
 INSERT INTO rounds (round_number, jackpot_amount, status, draw_time)
 VALUES (1, 0, 'active', datetime('now', '+10 minutes'));

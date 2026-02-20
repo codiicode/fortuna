@@ -1,24 +1,24 @@
-// Kör varje minut — processar deposits + kollar om runda gått ut → draw
+// Runs every minute — processes deposits + checks if round has expired → draw
 
 export default {
   async scheduled(event, env) {
     try {
-      // Processa nya deposits först
+      // Process new deposits first
       await fetch(env.SITE_URL + '/api/process-deposits', { method: 'POST' });
 
-      // Hämta aktiv runda
+      // Get active round
       const roundResp = await fetch(env.SITE_URL + '/api/current-round');
       const round = await roundResp.json();
 
       if (!round.draw_time) return;
 
-      // Kolla om draw_time har passerat
+      // Check if draw_time has passed
       const drawTime = new Date(round.draw_time + 'Z');
       const now = new Date();
 
       if (now < drawTime) return;
 
-      // Kör draw
+      // Execute draw
       const resp = await fetch(env.SITE_URL + '/api/draw', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

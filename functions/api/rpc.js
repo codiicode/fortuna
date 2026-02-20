@@ -1,5 +1,5 @@
-// Proxy för Solana RPC — håller API-nyckeln på backend
-// Tillåter bara specifika metoder
+// Proxy for Solana RPC — keeps API key server-side
+// Only allows specific methods
 
 const ALLOWED_METHODS = ['getLatestBlockhash', 'sendRawTransaction'];
 
@@ -13,7 +13,7 @@ export async function onRequestPost(context) {
   try {
     const body = await context.request.json();
 
-    // Tillåt bara säkra metoder
+    // Only allow safe methods
     if (!ALLOWED_METHODS.includes(body.method)) {
       return Response.json({ error: 'Method not allowed' }, { status: 403 });
     }

@@ -29,7 +29,7 @@ async function sendPayout(rpcUrl, treasurySecretKeyB58, winnerAddr, amountSol) {
   const toPubkey = b58decode(winnerAddr);
   const systemProgramId = new Uint8Array(32); // 11111111111111111111111111111111
 
-  // Hämta recent blockhash
+  // Get recent blockhash
   const bhResp = await fetch(rpcUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,7 +50,7 @@ async function sendPayout(rpcUrl, treasurySecretKeyB58, winnerAddr, amountSol) {
   view.setUint32(4, Number(lamports & 0xFFFFFFFFn), true);
   view.setUint32(8, Number((lamports >> 32n) & 0xFFFFFFFFn), true);
 
-  // Bygg message (150 bytes)
+  // Build message (150 bytes)
   // Header(3) + numKeys(1) + keys(96) + blockhash(32) + numIx(1) + ix(17)
   const message = new Uint8Array(150);
   let o = 0;
@@ -70,19 +70,19 @@ async function sendPayout(rpcUrl, treasurySecretKeyB58, winnerAddr, amountSol) {
   message[o++] = 12; // data length
   message.set(ixData, o);
 
-  // Signera med Ed25519
+  // Sign with Ed25519
   const cryptoKey = await crypto.subtle.importKey(
     'raw', seed, { name: 'Ed25519' }, false, ['sign']
   );
   const sig = new Uint8Array(await crypto.subtle.sign('Ed25519', cryptoKey, message));
 
-  // Bygg full transaktion
+  // Build full transaction
   const tx = new Uint8Array(1 + 64 + message.length);
   tx[0] = 1; // numSignatures
   tx.set(sig, 1);
   tx.set(message, 65);
 
-  // Skicka
+  // Send
   let binary = '';
   for (let i = 0; i < tx.length; i++) binary += String.fromCharCode(tx[i]);
 
@@ -111,7 +111,7 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    // Processa eventuella obehandlade deposits först
+    // Process any pending deposits first
     try {
       await fetch(new URL('/api/process-deposits', context.request.url), { method: 'POST' });
     } catch (e) { /* non-critical */ }
@@ -124,7 +124,7 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'No active round' }, { status: 400 });
     }
 
-    // Hämta senaste slot + blockhash
+    // Get latest slot + blockhash
     const rpcUrl = context.env.SOLANA_RPC || 'https://api.mainnet-beta.solana.com';
 
     const slotResp = await fetch(rpcUrl, {
@@ -149,7 +149,7 @@ export async function onRequestPost(context) {
       return Response.json({ error: 'Failed to get blockhash' }, { status: 500 });
     }
 
-    // Vinnarnummer: SHA256(blockhash + roundId) mod 10000
+    // Winning number: SHA256(blockhash + roundId) mod 10000
     const encoder = new TextEncoder();
     const data = encoder.encode(blockhash + ':' + round.id);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -157,7 +157,7 @@ export async function onRequestPost(context) {
     const hashHex = Array.from(hashArray).map(b => b.toString(16).padStart(2, '0')).join('');
     const winningNumber = parseInt(hashHex.slice(0, 8), 16) % 10000;
 
-    // Hitta vinnare (exakt 4-siffrig match)
+    // Find winner (exact 4-digit match)
     const { results: winners } = await db.prepare(
       `SELECT DISTINCT wallet_address FROM tickets
        WHERE round_id = ? AND ticket_number = ?`
@@ -165,7 +165,7 @@ export async function onRequestPost(context) {
 
     const winnerWallet = winners && winners.length > 0 ? winners[0].wallet_address : null;
 
-    // Stäng rundan
+    // Close the round
     await db.prepare(
       `UPDATE rounds SET
         status = 'drawn',
@@ -176,7 +176,7 @@ export async function onRequestPost(context) {
        WHERE id = ?`
     ).bind(winningNumber, winnerWallet, blockhash, slot, round.id).run();
 
-    // Auto-payout till vinnare
+    // Auto-payout to winner
     let payoutTx = null;
     if (winnerWallet && round.jackpot_amount > 0 && context.env.TREASURY_PRIVATE_KEY) {
       try {
@@ -189,11 +189,11 @@ export async function onRequestPost(context) {
         console.log('Payout sent:', payoutTx);
       } catch (payErr) {
         console.error('Payout failed:', payErr.message);
-        // Dragningen är redan klar — logga felet, manuell payout behövs
+        // Draw already completed — log error, manual payout needed
       }
     }
 
-    // Ny runda — jackpot rullar om ingen vinnare
+    // New round — jackpot rolls over if no winner
     const durationMinutes = parseInt(context.env.ROUND_DURATION_MINUTES) || 1440;
     const nextDrawTime = new Date(Date.now() + durationMinutes * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
     const nextJackpot = winnerWallet ? 0 : round.jackpot_amount;

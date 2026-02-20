@@ -4,7 +4,7 @@ export async function onRequestPost(context) {
   const rpcUrl = context.env.SOLANA_RPC || 'https://api.mainnet-beta.solana.com';
 
   try {
-    // Hämta aktiv runda
+    // Get active round
     const round = await db.prepare(
       `SELECT * FROM rounds WHERE status = 'active' ORDER BY round_number DESC LIMIT 1`
     ).first();
@@ -15,7 +15,7 @@ export async function onRequestPost(context) {
 
     const TICKET_PRICE_SOL = round.ticket_price || 0.03;
 
-    // Hämta senaste transaktionerna till treasury
+    // Get recent transactions to treasury
     const sigsResp = await fetch(rpcUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -32,7 +32,7 @@ export async function onRequestPost(context) {
       return Response.json({ processed: 0 });
     }
 
-    // Kolla vilka signaturer som redan är processade
+    // Check which signatures are already processed
     const sigList = signatures.map(s => s.signature);
     const placeholders = sigList.map(() => '?').join(',');
     const { results: existing } = await db.prepare(
@@ -40,7 +40,7 @@ export async function onRequestPost(context) {
     ).bind(...sigList).all();
     const existingSet = new Set((existing || []).map(r => r.tx_signature));
 
-    // Filtrera nya (ej processade, ej felaktiga)
+    // Filter new (unprocessed, non-failed)
     const newSigs = signatures.filter(s => !s.err && !existingSet.has(s.signature));
 
     if (newSigs.length === 0) {
@@ -49,7 +49,7 @@ export async function onRequestPost(context) {
 
     let totalProcessed = 0;
 
-    // Processa varje ny transaktion
+    // Process each new transaction
     for (const sig of newSigs) {
       try {
         const txResp = await fetch(rpcUrl, {
@@ -66,7 +66,7 @@ export async function onRequestPost(context) {
 
         if (!tx || tx.meta?.err) continue;
 
-        // Hitta SOL-transfer till treasury
+        // Find SOL transfer to treasury
         const instructions = tx.transaction?.message?.instructions || [];
         let senderWallet = null;
         let amountSol = 0;
@@ -82,7 +82,7 @@ export async function onRequestPost(context) {
           }
         }
 
-        // Kolla innerInstructions också
+        // Check innerInstructions as well
         if (!senderWallet && tx.meta?.innerInstructions) {
           for (const inner of tx.meta.innerInstructions) {
             for (const ix of inner.instructions) {
@@ -101,11 +101,11 @@ export async function onRequestPost(context) {
 
         if (!senderWallet || amountSol < TICKET_PRICE_SOL) continue;
 
-        // Beräkna antal tickets: floor(belopp / pris)
+        // Calculate ticket count: floor(amount / price)
         const ticketCount = Math.floor(amountSol / TICKET_PRICE_SOL);
         if (ticketCount <= 0) continue;
 
-        // Generera tickets
+        // Generate tickets
         const stmt = db.prepare(
           `INSERT INTO tickets (round_id, wallet_address, ticket_number, tx_signature)
            VALUES (?, ?, ?, ?)`
@@ -119,7 +119,7 @@ export async function onRequestPost(context) {
 
         await db.batch(batch);
 
-        // Uppdatera jackpot (90% jackpot, 7.5% buyback & burn, 2.5% protocol)
+        // Update jackpot (90% jackpot, 7.5% buyback & burn, 2.5% protocol)
         const addedToJackpot = ticketCount * TICKET_PRICE_SOL * 0.9;
         await db.prepare(
           `UPDATE rounds SET jackpot_amount = jackpot_amount + ? WHERE id = ?`
@@ -128,7 +128,7 @@ export async function onRequestPost(context) {
         totalProcessed += ticketCount;
 
       } catch (txErr) {
-        // Hoppa över enskild tx om den misslyckas, fortsätt med nästa
+        // Skip individual tx on failure, continue with next
         console.error('Failed to process tx:', sig.signature, txErr.message);
       }
     }
