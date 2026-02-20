@@ -6,5 +6,5 @@ compatibility_date = "2024-12-01"
 crons = ["* * * * *"]  # Runs every minute, checks if round has expired
 
 [vars]
-SITE_URL = "https://fortuna-62k.pages.dev"
+SITE_URL = "https://fortunaonsol.com"
 # DRAW_SECRET is set as secret via: wrangler secret put DRAW_SECRET
