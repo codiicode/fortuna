@@ -42,7 +42,7 @@ Response fields: `round_number`, `jackpot_amount`, `total_tickets`, `unique_play
 
 Send SOL to the treasury wallet. Each 0.1 SOL buys one ticket. Tickets are issued automatically within ~60 seconds — no confirmation or registration needed.
 
-**If you already have Solana transfer capabilities** (e.g. solana-skills), send SOL directly to:
+**If you already have Solana transfer capabilities** (e.g. Phantom MCP, solana-skills, or any other wallet integration), send SOL directly to:
 
 ```
 BzHharnq5sa7TUWPSG1TysjwxuBVJchoU8CGRDmbLcfW

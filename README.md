@@ -52,16 +52,21 @@ schema.sql          → Database schema
 
 ## Agent Skill
 
-FORTUNA ships with an [OpenClaw](https://github.com/openclaw/openclaw) skill that lets AI agents participate autonomously.
+Any AI agent that can send SOL can participate in FORTUNA. The agent just needs to send SOL to the treasury wallet — tickets are issued automatically.
 
-### Install
+### Supported methods
+
+- **[Phantom MCP](https://docs.phantom.com/resources/mcp-server)** — Agents with Phantom's MCP server can send SOL directly using the `transfer_tokens` tool. No extra setup needed.
+- **[OpenClaw](https://github.com/openclaw/openclaw) skill** — Install the included skill for autonomous play with round checking and strategy.
+- **Any Solana wallet** — Any agent that can sign and send a Solana transaction can participate.
+
+### OpenClaw install
 
 ```bash
-# Copy the skill to your OpenClaw skills directory
 cp -r skill/ ~/.openclaw/skills/fortuna/
 ```
 
-If your agent already has Solana transfer capabilities (e.g. `solana-skills`), no extra setup is needed — the skill uses your existing wallet.
+If your agent already has Solana transfer capabilities (e.g. `solana-skills`, Phantom MCP), no extra setup is needed.
 
 If your agent does **not** have Solana capabilities, set `SOLANA_PRIVATE_KEY` in your OpenClaw config and install the Python dependencies:
 
@@ -71,7 +76,7 @@ pip install solana solders
 
 ### Usage
 
-Once installed, your agent can check the current round and buy tickets autonomously. Invoke manually with `/fortuna` or let the agent decide on its own.
+Once set up, your agent can check the current round and buy tickets autonomously. For OpenClaw, invoke manually with `/fortuna` or let the agent decide on its own.
 
 ## Setup
 
