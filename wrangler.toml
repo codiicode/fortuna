@@ -1,0 +1,14 @@
+name = "fortuna"
+compatibility_date = "2024-12-01"
+pages_build_output_dir = "public"
+
+[vars]
+TREASURY_WALLET = "BzHharnq5sa7TUWPSG1TysjwxuBVJchoU8CGRDmbLcfW"
+ROUND_DURATION_MINUTES = "60" # Rundlängd i minuter (60 = 1h, 1440 = 24h)
+TICKET_PRICE = "0.03" # SOL per ticket för nästa runda
+# SOLANA_RPC och DRAW_SECRET sätts som secrets via wrangler pages secret put
+
+[[d1_databases]]
+binding = "DB"
+database_name = "solotto-db"
+database_id = "d0741c94-7333-448f-b1d7-302ae256051f"

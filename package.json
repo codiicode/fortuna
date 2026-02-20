@@ -1,0 +1,12 @@
+{
+  "name": "fortuna",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx wrangler pages dev public --d1 DB=solotto-db",
+    "deploy": "npx wrangler pages deploy public",
+    "db:create": "npx wrangler d1 create solotto-db",
+    "db:init": "npx wrangler d1 execute solotto-db --file=schema.sql",
+    "db:init:local": "npx wrangler d1 execute solotto-db --local --file=schema.sql"
+  }
+}

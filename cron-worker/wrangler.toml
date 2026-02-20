@@ -1,0 +1,10 @@
+name = "fortuna-cron"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+
+[triggers]
+crons = ["* * * * *"]  # Kör varje minut, kollar om rundan gått ut
+
+[vars]
+SITE_URL = "https://fortuna-62k.pages.dev"
+# DRAW_SECRET sätts som secret via: wrangler secret put DRAW_SECRET
