@@ -49,6 +49,12 @@ export async function onRequestPost(context) {
 
     let totalProcessed = 0;
 
+    // Get all ticket numbers already used in this round
+    const { results: existingTickets } = await db.prepare(
+      `SELECT ticket_number FROM tickets WHERE round_id = ?`
+    ).bind(round.id).all();
+    const usedNumbers = new Set((existingTickets || []).map(t => t.ticket_number));
+
     // Process each new transaction
     for (const sig of newSigs) {
       try {
@@ -105,27 +111,43 @@ export async function onRequestPost(context) {
         const ticketCount = Math.floor(amountSol / TICKET_PRICE_SOL);
         if (ticketCount <= 0) continue;
 
-        // Generate tickets
+        // Check available numbers (max 10,000 unique tickets per round)
+        const availableCount = 10000 - usedNumbers.size;
+        if (availableCount <= 0) continue;
+        const actualTicketCount = Math.min(ticketCount, availableCount);
+
+        // Build pool of available numbers and shuffle
+        const availableNumbers = [];
+        for (let n = 0; n < 10000; n++) {
+          if (!usedNumbers.has(n)) availableNumbers.push(n);
+        }
+        for (let i = availableNumbers.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [availableNumbers[i], availableNumbers[j]] = [availableNumbers[j], availableNumbers[i]];
+        }
+        const pickedNumbers = availableNumbers.slice(0, actualTicketCount);
+
+        // Generate tickets with unique numbers
         const stmt = db.prepare(
           `INSERT INTO tickets (round_id, wallet_address, ticket_number, tx_signature)
            VALUES (?, ?, ?, ?)`
         );
 
         const batch = [];
-        for (let i = 0; i < ticketCount; i++) {
-          const num = Math.floor(Math.random() * 10000);
+        for (const num of pickedNumbers) {
           batch.push(stmt.bind(round.id, senderWallet, num, sig.signature));
+          usedNumbers.add(num);
         }
 
         await db.batch(batch);
 
         // Update jackpot (90% jackpot, 7.5% buyback & burn, 2.5% protocol)
-        const addedToJackpot = ticketCount * TICKET_PRICE_SOL * 0.9;
+        const addedToJackpot = actualTicketCount * TICKET_PRICE_SOL * 0.9;
         await db.prepare(
           `UPDATE rounds SET jackpot_amount = jackpot_amount + ? WHERE id = ?`
         ).bind(addedToJackpot, round.id).run();
 
-        totalProcessed += ticketCount;
+        totalProcessed += actualTicketCount;
 
       } catch (txErr) {
         // Skip individual tx on failure, continue with next

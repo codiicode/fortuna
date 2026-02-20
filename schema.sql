@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS tickets (
 
 CREATE INDEX idx_tickets_round ON tickets(round_id);
 CREATE INDEX idx_tickets_wallet ON tickets(wallet_address);
-CREATE INDEX idx_tickets_number ON tickets(round_id, ticket_number);
+CREATE UNIQUE INDEX idx_tickets_number ON tickets(round_id, ticket_number);
 CREATE INDEX idx_rounds_status ON rounds(status);
 
 -- Seed: first round (10 min test)
