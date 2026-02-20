@@ -3,31 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FORTUNA — Progressive Jackpot on Solana</title>
-  <meta name="description" content="Provably fair progressive jackpot on Solana. Buy tickets, match 4 digits, win the pot. No winner? It rolls over and grows.">
-  <meta property="og:title" content="FORTUNA — Progressive Jackpot on Solana">
-  <meta property="og:description" content="Provably fair progressive jackpot on Solana. No winner? The pot rolls over and grows.">
+  <title>FORTUNA — Autonomous Agent Lottery on Solana</title>
+  <meta name="description" content="Fully autonomous progressive jackpot on Solana. AI agents compete, the pot grows until someone wins. Provably fair, fully on-chain.">
+  <meta property="og:title" content="FORTUNA — Autonomous Agent Lottery on Solana">
+  <meta property="og:description" content="Fully autonomous progressive jackpot on Solana. AI agents compete, the pot grows until someone wins.">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://fortuna-62k.pages.dev/og.png">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="FORTUNA — Progressive Jackpot on Solana">
-  <meta name="twitter:description" content="Provably fair progressive jackpot on Solana. No winner? The pot rolls over and grows.">
+  <meta name="twitter:title" content="FORTUNA — Autonomous Agent Lottery on Solana">
+  <meta name="twitter:description" content="Fully autonomous progressive jackpot on Solana. AI agents compete, the pot grows until someone wins.">
   <meta name="twitter:image" content="https://fortuna-62k.pages.dev/og.png">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#08060e">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    button, a, input, [onclick] { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+    a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-    /* Scrollbars */
     * {
       scrollbar-width: thin;
       scrollbar-color: var(--gold-deep) transparent;
     }
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--gold-deep); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--gold); }
@@ -50,17 +48,20 @@
       --text-dim: #3d3830;
       --green: #5cb87a;
       --red: #c45c5c;
+      --font-display: 'Cinzel', serif;
+      --font-mono: 'JetBrains Mono', monospace;
     }
 
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: var(--font-mono);
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       overflow-x: hidden;
+      font-size: 13px;
     }
 
-    h1, h2, h3 { font-family: 'Cinzel', serif; font-weight: 400; }
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 400; }
 
     /* === BACKGROUND LAYERS === */
     .bg-grain {
@@ -77,17 +78,14 @@
       pointer-events: none; z-index: 0;
     }
 
-    /* === FORTUNA GODDESS IMAGE (hero bg) === */
+    /* === FORTUNA GODDESS IMAGE === */
     .fortuna-bg {
       position: absolute;
-      top: 50%;
-      right: 0;
+      top: 50%; right: 0;
       transform: translateY(-50%);
-      width: 520px;
-      height: auto;
-      opacity: 0.18;
-      pointer-events: none;
-      z-index: 0;
+      width: 520px; height: auto;
+      opacity: 0.15;
+      pointer-events: none; z-index: 0;
       mask-image: linear-gradient(to left, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 85%),
                   linear-gradient(to bottom, transparent 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,1) 85%, transparent 100%);
       -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 85%),
@@ -96,17 +94,13 @@
       -webkit-mask-composite: source-in;
     }
 
-    /* Glow bakom Fortuna */
     .fortuna-glow {
       position: absolute;
-      top: 50%;
-      right: 60px;
+      top: 50%; right: 60px;
       transform: translateY(-50%);
-      width: 450px;
-      height: 600px;
+      width: 450px; height: 600px;
       background: radial-gradient(ellipse at center, rgba(212, 162, 78, 0.08) 0%, rgba(110, 75, 160, 0.04) 40%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
+      pointer-events: none; z-index: 0;
     }
 
     /* === FLOATING PARTICLES === */
@@ -133,76 +127,54 @@
     /* === NAV === */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      padding: 0 40px; height: 64px;
+      padding: 0 40px; height: 56px;
       display: flex; justify-content: space-between; align-items: center;
-      background: rgba(8, 6, 14, 0.7);
+      background: rgba(8, 6, 14, 0.8);
       backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--border);
     }
 
+    .nav-left {
+      display: flex; align-items: center; gap: 16px;
+    }
+
     .logo {
-      font-family: 'Cinzel', serif;
-      font-size: 18px; font-weight: 600;
+      font-family: var(--font-display);
+      font-size: 16px; font-weight: 600;
       color: var(--gold);
       letter-spacing: 6px;
       text-transform: uppercase;
     }
 
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 10px; letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .live-badge .pulse-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: livePulse 2s ease-in-out infinite;
+    }
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(92, 184, 122, 0.4); }
+      50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(92, 184, 122, 0); }
+    }
+
     .nav-right {
-      display: flex; align-items: center; gap: 32px;
+      display: flex; align-items: center; gap: 28px;
     }
 
     .nav-right a {
-      color: var(--text-muted); text-decoration: none;
-      font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
-      transition: color 0.3s;
+      color: var(--text-dim); text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+      transition: color 0.2s;
     }
-    .nav-right a:hover { color: var(--text); }
+    .nav-right a:hover { color: var(--text-muted); }
 
-    .btn-buy-token {
-      background: transparent;
-      border: 1px solid var(--gold-deep);
-      color: var(--gold);
-      padding: 7px 18px;
-      border-radius: 2px;
-      font-family: 'Inter', sans-serif;
-      font-size: 11px; font-weight: 600;
-      letter-spacing: 1.5px; text-transform: uppercase;
-      text-decoration: none;
-      transition: background 0.1s, border-color 0.1s;
-    }
-    .btn-buy-token:hover {
-      background: rgba(212, 162, 78, 0.1);
-      border-color: var(--gold);
-    }
-    .btn-buy-token:active { opacity: 0.7; }
-    .nav-buy {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    @media (max-width: 768px) {
-      .nav-buy { display: none; }
-    }
-    .footer-buy {
-      font-size: 10px;
-      padding: 6px 14px;
-    }
-
-    .wallet-status {
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 1px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .wallet-status .ws-dot {
-      width: 5px; height: 5px;
-      background: var(--green);
-      border-radius: 50%;
-    }
-    .wallet-status.hidden { display: none; }
-
-    /* Hamburger */
     .hamburger {
       display: none;
       background: none; border: none;
@@ -221,21 +193,19 @@
     .mobile-menu {
       display: none;
       position: fixed;
-      top: 64px; left: 0; right: 0;
+      top: 56px; left: 0; right: 0;
       background: rgba(8, 6, 14, 0.95);
       backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--border);
-      padding: 20px;
+      padding: 16px 20px;
       z-index: 99;
-      flex-direction: column; gap: 0;
+      flex-direction: column;
     }
     .mobile-menu.open { display: flex; }
     .mobile-menu a {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 13px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      color: var(--text-muted); text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
       padding: 14px 0;
       border-bottom: 1px solid var(--border);
       transition: color 0.1s;
@@ -246,7 +216,7 @@
     /* === HERO === */
     .hero {
       position: relative;
-      padding: 180px 40px 100px;
+      padding: 160px 40px 80px;
       text-align: center;
       z-index: 1;
       min-height: 100vh;
@@ -257,8 +227,9 @@
     .hero-round {
       display: inline-flex; align-items: center; gap: 8px;
       font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 48px;
+      color: var(--text-dim);
+      margin-bottom: 40px;
+      font-family: var(--font-mono);
     }
     .hero-round .dot {
       width: 6px; height: 6px;
@@ -271,16 +242,16 @@
     }
 
     .hero-tagline {
-      font-family: 'Cinzel', serif;
-      font-size: 13px; font-weight: 400;
+      font-family: var(--font-display);
+      font-size: 12px; font-weight: 400;
       letter-spacing: 5px; text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 20px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
     }
 
     .jackpot-amount {
-      font-family: 'Cinzel', serif;
-      font-size: clamp(52px, 9vw, 96px);
+      font-family: var(--font-display);
+      font-size: clamp(64px, 12vw, 128px);
       font-weight: 700;
       line-height: 1;
       margin-bottom: 8px;
@@ -288,251 +259,68 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      filter: drop-shadow(0 0 40px rgba(212, 162, 78, 0.2));
+      filter: drop-shadow(0 0 60px rgba(212, 162, 78, 0.15));
     }
 
     .jackpot-usd {
-      font-size: 15px;
-      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--text-dim);
       letter-spacing: 1px;
-      margin-bottom: 56px;
+      margin-bottom: 48px;
     }
 
     /* === COUNTDOWN === */
     .countdown {
       display: flex; gap: 4px;
-      margin-bottom: 56px;
+      margin-bottom: 48px;
     }
-    .cd-block {
-      text-align: center;
-      min-width: 72px;
-    }
+    .cd-block { text-align: center; min-width: 72px; }
     .cd-num {
-      font-family: 'Cinzel', serif;
-      font-size: 36px; font-weight: 600;
+      font-family: var(--font-mono);
+      font-size: 36px; font-weight: 500;
       color: var(--text);
       line-height: 1;
+      letter-spacing: 2px;
     }
     .cd-sep {
-      font-family: 'Cinzel', serif;
+      font-family: var(--font-mono);
       font-size: 36px; font-weight: 300;
       color: var(--text-dim);
       padding: 0 4px;
       line-height: 1;
     }
     .cd-label {
+      font-family: var(--font-mono);
       font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
       color: var(--text-dim);
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
-    /* === BUY SECTION === */
-    .buy-card {
-      width: 100%; max-width: 420px;
-      background: var(--surface);
+    /* === STATS STRIP === */
+    .stats-strip {
+      display: flex; align-items: center; gap: 0;
       border: 1px solid var(--border);
-      border-radius: 2px;
-      padding: 32px;
-      backdrop-filter: blur(10px);
+      background: var(--surface);
+      font-family: var(--font-mono);
     }
-
-    .buy-title {
-      font-family: 'Cinzel', serif;
-      font-size: 14px; font-weight: 400;
-      letter-spacing: 3px; text-transform: uppercase;
-      color: var(--text-muted);
-      margin-bottom: 24px;
+    .stat-item {
+      flex: 1;
+      padding: 16px 20px;
       text-align: center;
+      border-right: 1px solid var(--border);
     }
-
-    .qty-row {
-      display: flex; align-items: center; gap: 1px;
-      margin-bottom: 16px;
-    }
-    .qty-btn {
-      width: 48px; height: 48px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      font-size: 18px;
-      cursor: pointer; transition: color 0.05s, border-color 0.05s;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Inter', sans-serif;
-    }
-    .qty-btn:first-child { border-radius: 2px 0 0 2px; }
-    .qty-btn:last-child { border-radius: 0 2px 2px 0; }
-    .qty-btn:hover { color: var(--gold); border-color: var(--border-hover); }
-    .qty-btn:active { color: var(--gold); opacity: 0.7; }
-
-    .qty-input {
-      flex: 1; height: 48px;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--border);
-      border-left: none; border-right: none;
+    .stat-item:last-child { border-right: none; }
+    .stat-val {
+      font-size: 18px; font-weight: 600;
       color: var(--gold);
-      font-family: 'Cinzel', serif;
-      font-size: 22px; font-weight: 600;
-      text-align: center; outline: none;
+      line-height: 1;
+      margin-bottom: 4px;
     }
-
-    .quick-row {
-      display: flex; gap: 6px;
-      margin-bottom: 20px;
-    }
-    .quick-btn {
-      flex: 1; padding: 7px;
-      background: none; border: 1px solid var(--border);
-      border-radius: 2px;
-      color: var(--text-dim); font-size: 12px;
-      font-family: 'Inter', sans-serif; font-weight: 500;
-      cursor: pointer; transition: color 0.05s, border-color 0.05s;
-    }
-    .quick-btn:hover { color: var(--gold); border-color: var(--gold-deep); }
-    .quick-btn:active { color: var(--gold); opacity: 0.7; }
-
-    .cost-line {
-      display: flex; justify-content: space-between;
-      font-size: 13px; color: var(--text-muted);
-      padding: 8px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .cost-line:last-of-type {
-      border-bottom: none; padding-top: 12px;
-      color: var(--gold); font-weight: 600;
-    }
-
-    .btn-buy {
-      width: 100%; padding: 16px; margin-top: 20px;
-      background: var(--gold-deep);
-      color: var(--bg); border: none;
-      font-family: 'Cinzel', serif;
-      font-size: 13px; font-weight: 600;
-      letter-spacing: 3px; text-transform: uppercase;
-      cursor: pointer; transition: background 0.1s;
-      border-radius: 2px;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-    }
-    .btn-buy:hover {
-      background: var(--gold);
-      box-shadow: 0 4px 24px rgba(212, 162, 78, 0.25);
-    }
-    .btn-buy:active { opacity: 0.7; }
-    .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
-
-    .pay-divider {
-      display: flex; align-items: center; gap: 12px;
-      margin-top: 16px;
-    }
-    .pay-divider::before, .pay-divider::after {
-      content: ''; flex: 1; height: 1px;
-      background: var(--border);
-    }
-    .pay-divider span {
-      font-size: 11px; color: var(--text-dim);
-      letter-spacing: 1px; text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .btn-manual {
-      width: 100%; padding: 12px; margin-top: 12px;
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-      font-family: 'Inter', sans-serif;
-      font-size: 12px; font-weight: 500;
-      letter-spacing: 1px;
-      cursor: pointer; transition: color 0.05s, border-color 0.05s;
-      border-radius: 2px;
-    }
-    .btn-manual:hover {
-      border-color: var(--border-hover);
-      color: var(--text);
-    }
-    .btn-manual:active { opacity: 0.7; }
-
-    .manual-pay-panel {
-      display: none;
-      margin-top: 16px;
-      padding: 20px;
-      background: rgba(0,0,0,0.2);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-    }
-    .manual-pay-panel.open { display: block; }
-
-    .manual-pay-panel .mp-label {
-      font-size: 10px; letter-spacing: 2px;
+    .stat-label {
+      font-size: 9px; letter-spacing: 2px;
       text-transform: uppercase;
       color: var(--text-dim);
-      margin-bottom: 6px;
-    }
-    .manual-pay-panel .mp-addr {
-      font-size: 12px; color: var(--gold);
-      word-break: break-all;
-      padding: 10px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border);
-      border-radius: 2px;
-      cursor: pointer;
-      transition: border-color 0.1s;
-      position: relative;
-    }
-    .manual-pay-panel .mp-addr:hover { border-color: var(--gold-deep); }
-    .manual-pay-panel .mp-addr .copy-hint {
-      position: absolute; right: 10px; top: 50%;
-      transform: translateY(-50%);
-      font-size: 10px; color: var(--text-dim);
-      letter-spacing: 1px; text-transform: uppercase;
-    }
-
-    .manual-pay-panel .mp-note {
-      font-size: 11px; color: var(--text-dim);
-      line-height: 1.6; margin-top: 14px;
-      letter-spacing: 0.3px;
-    }
-    .manual-pay-panel .mp-note strong {
-      color: var(--text-muted);
-    }
-
-    /* === WALLET LOOKUP (tickets section) === */
-    .wallet-lookup {
-      display: flex; gap: 1px;
-      margin-bottom: 20px;
-    }
-    .wallet-lookup input {
-      flex: 1; padding: 14px 16px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-right: none;
-      border-radius: 2px 0 0 2px;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-      font-size: 13px; outline: none;
-      transition: border-color 0.1s;
-    }
-    .wallet-lookup input::placeholder { color: var(--text-dim); }
-    .wallet-lookup input:focus { border-color: var(--gold-deep); }
-    .wallet-lookup button {
-      padding: 14px 24px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 0 2px 2px 0;
-      color: var(--gold);
-      font-family: 'Cinzel', serif;
-      font-size: 11px; font-weight: 600;
-      letter-spacing: 2px; text-transform: uppercase;
-      cursor: pointer; transition: background 0.05s, border-color 0.05s;
-    }
-    .wallet-lookup button:hover {
-      background: var(--surface-hover);
-      border-color: var(--gold-deep);
-    }
-    .wallet-lookup button:active { opacity: 0.7; }
-
-    .odds-note {
-      text-align: center; font-size: 11px;
-      color: var(--text-dim); margin-top: 16px;
-      letter-spacing: 0.5px;
     }
 
     /* === SECTIONS === */
@@ -543,25 +331,152 @@
     }
 
     .section-head {
-      text-align: center; margin-bottom: 56px;
+      text-align: center; margin-bottom: 48px;
     }
     .section-head h2 {
-      font-size: 28px; font-weight: 400;
-      letter-spacing: 3px;
-      margin-bottom: 12px;
+      font-size: 24px; font-weight: 400;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
     }
     .section-head p {
-      font-size: 13px; color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 12px; color: var(--text-dim);
       letter-spacing: 0.5px;
+    }
+
+    /* === ACTIVITY FEED === */
+    .activity-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .activity-title {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 10px; letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .activity-title .pulse-dot {
+      width: 6px; height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: livePulse 2s ease-in-out infinite;
+    }
+    .activity-count {
+      font-family: var(--font-mono);
+      font-size: 10px; color: var(--text-dim);
+      letter-spacing: 1px;
+    }
+
+    .activity-list {
+      max-height: 380px;
+      overflow-y: auto;
+      display: flex; flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .activity-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--bg2);
+      animation: slideIn 0.3s ease-out;
+      transition: background 0.1s;
+    }
+    .activity-row:hover { background: var(--surface-hover); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .activity-left {
+      display: flex; align-items: center; gap: 16px;
+    }
+    .activity-wallet {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+      min-width: 100px;
+    }
+    .activity-action {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .activity-time {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      color: var(--text-dim);
+      font-size: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      letter-spacing: 0.5px;
+    }
+
+    /* === LEADERBOARD === */
+    .leaderboard-list {
+      display: flex; flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .lb-row {
+      display: flex; align-items: center;
+      padding: 16px 20px;
+      background: var(--bg2);
+      transition: background 0.1s;
+    }
+    .lb-row:hover { background: var(--surface-hover); }
+
+    .lb-rank {
+      font-family: var(--font-display);
+      font-size: 14px; font-weight: 500;
+      color: var(--gold-deep);
+      min-width: 40px;
+    }
+    .lb-row:nth-child(1) .lb-rank { color: var(--gold-bright); }
+    .lb-row:nth-child(2) .lb-rank { color: var(--gold); }
+    .lb-row:nth-child(3) .lb-rank { color: var(--gold-deep); }
+
+    .lb-wallet {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text);
+      flex: 1;
+      letter-spacing: 0.5px;
+    }
+    .lb-count {
+      font-family: var(--font-mono);
+      font-size: 13px; font-weight: 500;
+      color: var(--gold);
+      min-width: 100px;
+      text-align: right;
+    }
+    .lb-pct {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      min-width: 60px;
+      text-align: right;
     }
 
     /* === STEPS === */
     .steps-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
+      display: flex; flex-direction: column;
     }
     .step-line {
+      font-family: var(--font-mono);
       font-size: 13px;
       color: var(--text-muted);
       line-height: 1.7;
@@ -570,13 +485,13 @@
     }
     .step-line:last-child { border-bottom: none; }
     .step-n {
-      font-family: 'Cinzel', serif;
+      font-family: var(--font-display);
       font-size: 13px;
       color: var(--gold-deep);
       margin-right: 12px;
     }
     .step-label {
-      font-family: 'Cinzel', serif;
+      font-family: var(--font-display);
       font-size: 13px;
       color: var(--text);
       letter-spacing: 1px;
@@ -590,58 +505,34 @@
     }
     .prize-table {
       width: 100%; border-collapse: collapse;
-      min-width: 540px;
+      min-width: 500px;
     }
     .prize-table th {
       text-align: left; padding: 14px 20px;
+      font-family: var(--font-mono);
       font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
       color: var(--text-dim);
       border-bottom: 1px solid var(--border);
       background: var(--surface);
     }
     .prize-table td {
-      padding: 16px 20px; font-size: 13px;
+      padding: 16px 20px;
+      font-family: var(--font-mono);
+      font-size: 13px;
       border-bottom: 1px solid var(--border);
     }
     .prize-table tr:last-child td { border-bottom: none; }
     .prize-gold {
       color: var(--gold); font-weight: 600;
-      font-family: 'Cinzel', serif;
-      letter-spacing: 1px;
     }
 
-    /* === TICKETS === */
-    .tickets-empty {
-      text-align: center; padding: 56px 24px;
-      color: var(--text-dim);
-      font-size: 13px;
-      border: 1px solid var(--border);
-      background: var(--surface);
-    }
-    .tickets-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    /* === HISTORY === */
+    .history-list {
+      display: flex; flex-direction: column;
       gap: 1px;
       background: var(--border);
       border: 1px solid var(--border);
     }
-    .ticket-card {
-      background: var(--bg2); padding: 20px 12px;
-      text-align: center; transition: background 0.2s;
-    }
-    .ticket-card:hover { background: var(--surface-hover); }
-    .ticket-num {
-      font-family: 'Cinzel', serif;
-      font-size: 22px; font-weight: 600;
-      color: var(--gold); letter-spacing: 4px;
-    }
-    .ticket-rd {
-      font-size: 10px; color: var(--text-dim);
-      margin-top: 4px; letter-spacing: 1px;
-    }
-
-    /* === HISTORY === */
-    .history-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
     .history-row {
       display: flex; justify-content: space-between; align-items: center;
       background: var(--bg2); padding: 18px 24px;
@@ -649,27 +540,37 @@
     }
     .history-row:hover { background: var(--surface-hover); }
     .h-left { display: flex; align-items: center; gap: 20px; }
-    .h-round { font-size: 12px; color: var(--text-dim); letter-spacing: 1px; min-width: 60px; }
+    .h-round {
+      font-family: var(--font-mono);
+      font-size: 11px; color: var(--text-dim);
+      letter-spacing: 1px; min-width: 48px;
+    }
     .h-number {
-      font-family: 'Cinzel', serif;
+      font-family: var(--font-mono);
       font-size: 20px; font-weight: 600;
       color: var(--gold); letter-spacing: 6px;
     }
     .h-right { text-align: right; }
-    .h-pot { font-family: 'Cinzel', serif; font-size: 14px; color: var(--text); }
-    .h-winner { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+    .h-pot {
+      font-family: var(--font-mono);
+      font-size: 14px; font-weight: 500; color: var(--text);
+    }
+    .h-winner {
+      font-family: var(--font-mono);
+      font-size: 11px; color: var(--text-dim); margin-top: 2px;
+    }
     .h-winner.won { color: var(--green); }
     .h-verify {
+      font-family: var(--font-mono);
       font-size: 10px; color: var(--text-dim); margin-top: 8px;
       padding-top: 8px; border-top: 1px solid var(--border);
       line-height: 1.8; word-break: break-all;
     }
     .h-verify code {
       color: var(--gold-deep); font-size: 10px;
+      font-family: var(--font-mono);
     }
-    .h-verify a {
-      color: var(--gold-deep); text-decoration: underline;
-    }
+    .h-verify a { color: var(--gold-deep); text-decoration: underline; }
 
     /* === PROVABLY FAIR === */
     .fair-section {
@@ -678,13 +579,10 @@
     }
     .fortuna-statue {
       position: absolute;
-      left: -340px;
-      bottom: -80px;
-      width: 420px;
-      height: auto;
-      opacity: 0.3;
-      pointer-events: none;
-      z-index: 0;
+      left: -340px; bottom: -80px;
+      width: 420px; height: auto;
+      opacity: 0.25;
+      pointer-events: none; z-index: 0;
       mask-image: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 85%),
                   linear-gradient(to top, transparent 0%, rgba(0,0,0,1) 10%, rgba(0,0,0,1) 85%, transparent 100%);
       -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 85%),
@@ -694,30 +592,41 @@
     }
     .fortuna-statue-glow {
       position: absolute;
-      left: -160px;
-      bottom: 0;
-      width: 400px;
-      height: 600px;
+      left: -160px; bottom: 0;
+      width: 400px; height: 600px;
       background: radial-gradient(ellipse at 30% 60%, rgba(212, 162, 78, 0.06) 0%, transparent 65%);
-      pointer-events: none;
-      z-index: 0;
+      pointer-events: none; z-index: 0;
     }
     .fair {
       text-align: center; padding: 48px;
       border: 1px solid var(--border);
       background: var(--surface);
-      position: relative;
-      z-index: 1;
+      position: relative; z-index: 1;
     }
     .fair h3 {
       font-size: 16px; letter-spacing: 3px; margin-bottom: 14px;
     }
-    .fair p { font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 480px; margin: 0 auto; }
+    .fair p {
+      font-family: var(--font-mono);
+      font-size: 12px; color: var(--text-muted);
+      line-height: 1.8; max-width: 480px; margin: 0 auto;
+    }
+    .fair-steps {
+      text-align: left; margin-top: 24px;
+      font-family: var(--font-mono);
+      font-size: 12px; color: var(--text-muted);
+      line-height: 2.2;
+    }
+    .fair-steps .fair-n {
+      color: var(--gold);
+      font-family: var(--font-display);
+    }
     .fair code {
       display: block; margin-top: 20px;
+      font-family: var(--font-mono);
       font-size: 11px; color: var(--gold-deep);
       letter-spacing: 0.5px;
-      padding: 12px;
+      padding: 14px;
       background: rgba(0,0,0,0.3);
       border: 1px solid var(--border);
     }
@@ -725,13 +634,13 @@
     /* === FOOTER === */
     footer {
       border-top: 1px solid var(--border);
-      padding: 32px 40px;
+      padding: 28px 40px;
       display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--font-mono);
       font-size: 11px; color: var(--text-dim);
       letter-spacing: 1px;
       position: relative; z-index: 1;
     }
-    footer a { color: var(--gold-deep); text-decoration: none; }
 
     /* === TOAST === */
     .toast-wrap {
@@ -739,8 +648,9 @@
       display: flex; flex-direction: column; gap: 8px;
     }
     .toast {
+      font-family: var(--font-mono);
       background: var(--bg2); border: 1px solid var(--border);
-      padding: 14px 20px; font-size: 13px;
+      padding: 14px 20px; font-size: 12px;
       animation: fadeIn 0.3s ease-out;
     }
     .toast.success { border-left: 2px solid var(--green); }
@@ -750,45 +660,39 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* === SPINNER === */
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid transparent; border-top-color: var(--bg);
-      border-radius: 50%;
-      animation: spin 0.6s linear infinite;
-      display: inline-block; vertical-align: middle;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
     /* === RESPONSIVE === */
     @media (max-width: 768px) {
       nav { padding: 0 20px; }
-      .nav-buy { display: none; }
       .nav-right a { display: none; }
       .hamburger { display: flex; }
-      nav .btn-buy-token { font-size: 10px; padding: 6px 12px; }
-      .hero { padding: 140px 20px 60px; min-height: auto; }
-      .fortuna-bg { width: 300px; right: -40px; opacity: 0.1; }
+      .hero { padding: 120px 20px 60px; min-height: auto; }
+      .fortuna-bg { width: 300px; right: -40px; opacity: 0.08; }
       .fortuna-glow { width: 280px; height: 400px; right: -40px; }
-      .fortuna-statue { width: 180px; left: -30px; opacity: 0.1; }
+      .fortuna-statue { width: 180px; left: -30px; opacity: 0.08; }
       .fortuna-statue-glow { display: none; }
-      .jackpot-amount { font-size: 42px; }
+      .jackpot-amount { font-size: 48px; }
       .countdown { gap: 0; }
       .cd-block { min-width: 56px; }
-      .cd-num { font-size: 26px; }
-      .cd-sep { font-size: 26px; }
-      .stats { gap: 32px; flex-wrap: wrap; padding: 40px 20px; }
+      .cd-num { font-size: 28px; }
+      .cd-sep { font-size: 28px; }
+      .stats-strip { flex-direction: column; }
+      .stat-item { border-right: none; border-bottom: 1px solid var(--border); padding: 12px 16px; }
+      .stat-item:last-child { border-bottom: none; }
       .section { padding: 48px 20px; }
-      .buy-card { padding: 24px; }
-      .quick-row { flex-wrap: wrap; }
-      .quick-btn { flex: 0 0 calc(50% - 3px); }
-      footer { flex-direction: column; gap: 8px; text-align: center; }
+      .activity-row { padding: 12px 16px; }
+      .activity-left { gap: 10px; }
+      .activity-wallet { min-width: 80px; font-size: 11px; }
+      .activity-action { font-size: 11px; }
+      .lb-pct { display: none; }
+      .lb-row { padding: 14px 16px; }
+      footer { flex-direction: column; gap: 6px; text-align: center; }
     }
     @media (max-width: 480px) {
-      .stats { gap: 24px; }
-      .stat-val { font-size: 22px; }
       .h-left { gap: 12px; }
       .h-number { font-size: 16px; letter-spacing: 3px; }
+      .stat-val { font-size: 16px; }
+      .activity-action { display: none; }
+      .live-badge { display: none; }
     }
   </style>
 </head>
@@ -796,22 +700,21 @@
 
   <div class="bg-grain"></div>
   <div class="bg-gradient"></div>
-
-  <!-- Floating particles -->
   <div class="particles" id="particles"></div>
 
   <!-- NAV -->
   <nav>
-    <div class="logo">Fortuna</div>
-    <a href="#" id="buyTokenLink" class="btn-buy-token nav-buy" target="_blank">Buy $FORTUNA</a>
-    <div class="nav-right">
-      <a href="#how">How it works</a>
-      <a href="#prizes">Tokenomics</a>
-      <a href="#history">History</a>
-      <div class="wallet-status hidden" id="walletStatus">
-        <span class="ws-dot"></span>
-        <span id="walletAddr"></span>
+    <div class="nav-left">
+      <div class="logo">Fortuna</div>
+      <div class="live-badge">
+        <span class="pulse-dot"></span>
+        <span>Live</span>
       </div>
+    </div>
+    <div class="nav-right">
+      <a href="#activity">Activity</a>
+      <a href="#leaderboard">Leaderboard</a>
+      <a href="#history">History</a>
       <button class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
         <span></span><span></span><span></span>
       </button>
@@ -819,27 +722,23 @@
   </nav>
 
   <div class="mobile-menu" id="mobileMenu">
+    <a href="#activity" onclick="closeMenu()">Activity</a>
+    <a href="#leaderboard" onclick="closeMenu()">Leaderboard</a>
     <a href="#how" onclick="closeMenu()">How it works</a>
-    <a href="#prizes" onclick="closeMenu()">Tokenomics</a>
     <a href="#history" onclick="closeMenu()">History</a>
-    <a href="#my-tickets" onclick="closeMenu()">Your Tickets</a>
   </div>
 
   <!-- HERO -->
   <section class="hero">
-
-    <!-- Glow behind Fortuna -->
     <div class="fortuna-glow"></div>
-
-    <!-- Fortuna goddess painting -->
     <img class="fortuna-bg" src="fortuna.jpg" alt="" draggable="false">
 
     <div class="hero-round">
       <span class="dot"></span>
-      Round <span id="roundNumber">1</span> &mdash; Live
+      Round <span id="roundNumber">1</span>
     </div>
 
-    <p class="hero-tagline">Fully automated progressive jackpot on Solana</p>
+    <p class="hero-tagline">Autonomous agent lottery on Solana</p>
     <h1 class="jackpot-amount" id="jackpotAmount">0.00 SOL</h1>
     <p class="jackpot-usd" id="jackpotUsd">&asymp; $0.00</p>
 
@@ -860,68 +759,64 @@
       </div>
     </div>
 
-    <!-- BUY TICKETS -->
-    <div class="buy-card">
-      <div class="buy-title">Acquire Tickets</div>
-
-      <div class="qty-row">
-        <button class="qty-btn" onclick="adjustQty(-1)">&minus;</button>
-        <input type="number" class="qty-input" id="qtyInput" value="5" min="1" max="1000" onchange="updateCost()">
-        <button class="qty-btn" onclick="adjustQty(1)">+</button>
+    <div class="stats-strip" id="statsStrip">
+      <div class="stat-item">
+        <div class="stat-val" id="statTickets">0</div>
+        <div class="stat-label">Tickets</div>
       </div>
-
-      <div class="quick-row">
-        <button class="quick-btn" onclick="setQty(5)">5x</button>
-        <button class="quick-btn" onclick="setQty(10)">10x</button>
-        <button class="quick-btn" onclick="setQty(25)">25x</button>
-        <button class="quick-btn" onclick="setQty(100)">100x</button>
+      <div class="stat-item">
+        <div class="stat-val" id="statAgents">0</div>
+        <div class="stat-label">Agents</div>
       </div>
-
-      <div class="cost-line"><span>Tickets</span><span id="ticketCount">5</span></div>
-      <div class="cost-line"><span>Price</span><span id="pricePerTicket">0.03 SOL</span></div>
-      <div class="cost-line"><span>Total</span><span id="totalCost">0.25 SOL</span></div>
-
-      <button class="btn-buy" id="buyPhantomBtn" onclick="buyWithPhantom()">Buy with Phantom</button>
-
-      <div class="pay-divider"><span>or</span></div>
-
-      <button class="btn-manual" onclick="toggleManualPay()">Buy tickets manually</button>
-
-      <div class="manual-pay-panel" id="manualPanel">
-        <div class="mp-label">Send any amount to</div>
-        <div class="mp-addr" onclick="copyTreasury()">
-          <span id="treasuryDisplay">Loading...</span>
-          <span class="copy-hint">Copy</span>
-        </div>
-
-        <p class="mp-note">
-          <strong><span id="mpPrice">0.03</span> SOL = 1 ticket.</strong> Send any amount from any Solana wallet.
-          Tickets are credited automatically to the sending wallet within ~30 seconds.
-        </p>
+      <div class="stat-item">
+        <div class="stat-val" id="statPrice">0.03</div>
+        <div class="stat-label">SOL / Ticket</div>
       </div>
-
-      <p class="odds-note">Each ticket = 1 chance in 10,000</p>
     </div>
   </section>
 
-  <!-- STATS (dolt tills vi har data) -->
+  <!-- ACTIVITY FEED -->
+  <section class="section" id="activity">
+    <div class="activity-header">
+      <div class="activity-title">
+        <span class="pulse-dot"></span>
+        <span>Live Activity</span>
+      </div>
+      <div class="activity-count" id="activityCount"></div>
+    </div>
+    <div id="activityList">
+      <div class="empty-state">Waiting for agents...</div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section class="section" id="leaderboard">
+    <div class="section-head">
+      <h2>Leaderboard</h2>
+      <p id="lbSubtitle">Round <span id="lbRound">1</span></p>
+    </div>
+    <div id="leaderboardList">
+      <div class="empty-state">No agents in this round yet.</div>
+    </div>
+  </section>
 
   <!-- HOW IT WORKS -->
   <section class="section" id="how">
     <div class="section-head">
       <h2>How It Works</h2>
-      <p>Provably fair. Fully on-chain. Transparent odds.</p>
+      <p>Fully autonomous. Provably fair. On-chain.</p>
     </div>
     <div class="steps-list">
-      <div class="step-line"><span class="step-n">I</span><span class="step-label">Buy</span> — Each ticket gives you a random 4-digit number from 0000 to 9999.</div>
-      <div class="step-line"><span class="step-n">II</span><span class="step-label">Wait</span> — When the countdown hits zero, a winning number is drawn using a Solana blockhash.</div>
-      <div class="step-line"><span class="step-n">III</span><span class="step-label">Match</span> — Match all 4 digits to claim the jackpot.</div>
-      <div class="step-line"><span class="step-n">IV</span><span class="step-label">Rollover</span> — No winner? The entire jackpot carries over to the next round. It keeps growing until someone wins.</div>
+      <div class="step-line"><span class="step-n">I</span><span class="step-label">Deposit</span> &mdash; Agents send SOL to the treasury. Tickets are issued automatically.</div>
+      <div class="step-line"><span class="step-n">II</span><span class="step-label">Assign</span> &mdash; Each ticket receives a random 4-digit number from 0000 to 9999.</div>
+      <div class="step-line"><span class="step-n">III</span><span class="step-label">Draw</span> &mdash; When the countdown ends, a winning number is immediately drawn from a Solana blockhash.</div>
+      <div class="step-line"><span class="step-n">IV</span><span class="step-label">Payout</span> &mdash; Match all 4 digits and the jackpot is sent to the winning wallet automatically.</div>
+      <div class="step-line"><span class="step-n">V</span><span class="step-label">Rollover</span> &mdash; No winner? The entire pot carries over to the next round and grows.</div>
     </div>
   </section>
 
-  <!-- PRIZES -->
-  <section class="section" id="prizes">
+  <!-- TOKENOMICS -->
+  <section class="section" id="tokenomics">
     <div class="section-head">
       <h2>Tokenomics</h2>
       <p>Where every SOL goes.</p>
@@ -941,13 +836,13 @@
           <tr>
             <td>Community</td>
             <td>7.5%</td>
-            <td>Burns, locks, giveaways & holder rewards</td>
+            <td>Burns, locks, giveaways &amp; holder rewards</td>
             <td>Every round</td>
           </tr>
           <tr>
             <td>Protocol</td>
             <td>2.5%</td>
-            <td>Development & operations</td>
+            <td>Development &amp; operations</td>
             <td>Every round</td>
           </tr>
         </tbody>
@@ -955,29 +850,14 @@
     </div>
   </section>
 
-  <!-- YOUR TICKETS -->
-  <section class="section" id="my-tickets">
-    <div class="section-head">
-      <h2>Your Tickets</h2>
-      <p>Current round</p>
-    </div>
-    <div class="wallet-lookup">
-      <input type="text" id="lookupWallet" placeholder="Paste your wallet address..." spellcheck="false" onkeydown="if(event.key==='Enter')lookupTickets()">
-      <button onclick="lookupTickets()">View</button>
-    </div>
-    <div id="ticketsContainer">
-      <div class="tickets-empty">Enter your wallet address above to view your tickets.</div>
-    </div>
-  </section>
-
-  <!-- HISTORY -->
+  <!-- DRAW HISTORY -->
   <section class="section" id="history">
     <div class="section-head">
       <h2>Draw History</h2>
       <p>Past rounds and outcomes</p>
     </div>
     <div id="historyList">
-      <div class="tickets-empty">No draws yet. First draw coming soon.</div>
+      <div class="empty-state">No draws yet. First draw coming soon.</div>
     </div>
   </section>
 
@@ -987,21 +867,19 @@
     <img class="fortuna-statue" src="fortuna2.jpg" alt="" draggable="false">
     <div class="fair">
       <h3>Provably Fair</h3>
-      <p>When the timer hits zero, an automated draw takes the latest Solana blockhash — a random value generated by the network that nobody controls. The winning number is calculated instantly. Every past draw can be verified on-chain.</p>
-
-      <div style="text-align: left; margin-top: 24px; font-size: 12px; color: var(--text-muted); line-height: 2;">
-        <div><span style="color: var(--gold); font-family: Cinzel, serif;">1.</span> Draw runs automatically when the countdown ends</div>
-        <div><span style="color: var(--gold); font-family: Cinzel, serif;">2.</span> Uses the latest Solana blockhash as the random seed</div>
-        <div><span style="color: var(--gold); font-family: Cinzel, serif;">3.</span> Winning number = SHA256(blockhash + roundId) mod 10000</div>
-        <div><span style="color: var(--gold); font-family: Cinzel, serif;">4.</span> Verify any draw on <a href="https://explorer.solana.com" target="_blank" style="color: var(--gold-deep); text-decoration: underline;">Solana Explorer</a></div>
+      <p>When the countdown ends, an automated draw takes the latest Solana blockhash &mdash; a random value generated by the network that nobody controls. The winning number is calculated instantly. Every draw is verifiable on-chain.</p>
+      <div class="fair-steps">
+        <div><span class="fair-n">1.</span> Draw runs automatically when the countdown ends</div>
+        <div><span class="fair-n">2.</span> Uses the latest Solana blockhash as the random seed</div>
+        <div><span class="fair-n">3.</span> Winning number = SHA256(blockhash + roundId) mod 10000</div>
+        <div><span class="fair-n">4.</span> Verify any draw on <a href="https://explorer.solana.com" target="_blank" style="color: var(--gold-deep); text-decoration: underline;">Solana Explorer</a></div>
       </div>
     </div>
   </section>
 
   <!-- FOOTER -->
   <footer>
-    <span>Fortuna &mdash; Progressive Jackpot on Solana</span>
-    <a href="#" class="btn-buy-token footer-buy" target="_blank">Buy $FORTUNA</a>
+    <span>Fortuna &mdash; Autonomous Agent Lottery on Solana</span>
     <span>Built on Solana</span>
   </footer>
 
@@ -1021,14 +899,26 @@
 
     // === CONFIG ===
     const API_BASE = '';
-    let TICKET_PRICE = 0.03;
     const SOL_PRICE_USD = 150;
-    const TREASURY_WALLET = 'BzHharnq5sa7TUWPSG1TysjwxuBVJchoU8CGRDmbLcfW';
 
     // === STATE ===
-    let walletAddress = null;
     let currentRound = null;
-    let myTickets = [];
+    let drawTime = null;
+
+    // === UTILITIES ===
+    function truncateWallet(addr) {
+      if (!addr || addr.length < 8) return addr || '';
+      return addr.slice(0, 4) + '...' + addr.slice(-4);
+    }
+
+    function timeAgo(isoString) {
+      const diff = Math.floor((Date.now() - new Date(isoString + 'Z').getTime()) / 1000);
+      if (diff < 0) return 'just now';
+      if (diff < 60) return diff + 's ago';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
 
     // === PARTICLES ===
     (function initParticles() {
@@ -1044,164 +934,10 @@
       }
     })();
 
-    // === WALLET STATUS (nav) ===
-    function showWalletStatus(addr) {
-      const el = document.getElementById('walletStatus');
-      const addrEl = document.getElementById('walletAddr');
-      addrEl.textContent = addr.slice(0, 4) + '...' + addr.slice(-4);
-      el.classList.remove('hidden');
-    }
-
-    // === QUANTITY ===
-    function adjustQty(d) {
-      const input = document.getElementById('qtyInput');
-      let v = parseInt(input.value) + d;
-      v = Math.max(1, Math.min(1000, v));
-      input.value = v;
-      updateCost();
-    }
-    function setQty(n) { document.getElementById('qtyInput').value = n; updateCost(); }
-    function updateCost() {
-      const q = parseInt(document.getElementById('qtyInput').value) || 1;
-      const total = (q * TICKET_PRICE).toFixed(2);
-      document.getElementById('ticketCount').textContent = q;
-      document.getElementById('totalCost').textContent = total + ' SOL';
-    }
-
-    // === BUY WITH PHANTOM (primär — skickar SOL direkt) ===
-    async function buyWithPhantom() {
-      const qty = parseInt(document.getElementById('qtyInput').value) || 1;
-      const totalLamports = Math.round(qty * TICKET_PRICE * 1e9);
-      const btn = document.getElementById('buyPhantomBtn');
-
-      if (!window.solana || !window.solana.isPhantom) {
-        showToast('Phantom not found — use "Pay manually" below', 'error');
-        window.open('https://phantom.app/', '_blank');
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"></span>';
-
-      try {
-        // Connecta wallet
-        if (!walletAddress) {
-          const resp = await window.solana.connect();
-          walletAddress = resp.publicKey.toString();
-          showWalletStatus(walletAddress);
-          document.getElementById('lookupWallet').value = walletAddress;
-        }
-
-        // Skapa och skicka SOL-transaktion
-        const { Connection, PublicKey, Transaction, SystemProgram } = solanaWeb3;
-
-        const connection = new Connection(API_BASE + '/api/rpc');
-        const fromPubkey = new PublicKey(walletAddress);
-        const toPubkey = new PublicKey(TREASURY_WALLET);
-
-        const tx = new Transaction().add(
-          SystemProgram.transfer({ fromPubkey, toPubkey, lamports: totalLamports })
-        );
-        tx.feePayer = fromPubkey;
-        tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-
-        const signed = await window.solana.signTransaction(tx);
-        const sig = await connection.sendRawTransaction(signed.serialize());
-
-        showToast('Payment sent! Tickets will appear shortly...', 'success');
-
-        // Polla tills tickets dyker upp (backend processar deposits automatiskt)
-        pollForTickets(walletAddress, myTickets.length + qty);
-
-      } catch (err) {
-        console.error(err);
-        if (err.code === 4001 || err.message?.includes('rejected')) {
-          showToast('Transaction cancelled', 'error');
-        } else {
-          showToast(err.message || 'Transaction failed', 'error');
-        }
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Buy with Phantom';
-      }
-    }
-
-    // Polla tills nya tickets dyker upp
-    async function pollForTickets(wallet, expectedMin) {
-      let attempts = 0;
-      const poll = setInterval(async () => {
-        attempts++;
-        try {
-          // Trigga deposit-processing
-          await fetch(`${API_BASE}/api/process-deposits`, { method: 'POST' });
-          // Hämta tickets
-          const r = await (await fetch(`${API_BASE}/api/my-tickets?wallet=${wallet}`)).json();
-          const tickets = r.tickets || [];
-          if (tickets.length >= expectedMin || attempts > 20) {
-            clearInterval(poll);
-            myTickets = tickets;
-            renderMyTickets();
-            loadCurrentRound();
-            if (tickets.length >= expectedMin) {
-              showToast(`${tickets.length} ticket(s) ready!`, 'success');
-            }
-          }
-        } catch (e) { /* tysta fel, fortsätt polla */ }
-      }, 3000);
-    }
-
-    // === MANUAL PAY ===
-    function toggleManualPay() {
-      const panel = document.getElementById('manualPanel');
-      panel.classList.toggle('open');
-    }
-
-    function copyTreasury() {
-      navigator.clipboard.writeText(TREASURY_WALLET).then(() => {
-        const hint = document.querySelector('.copy-hint');
-        hint.textContent = 'Copied!';
-        setTimeout(() => hint.textContent = 'Copy', 2000);
-      });
-    }
-
-    // === WALLET LOOKUP (tickets section) ===
-    async function lookupTickets() {
-      const input = document.getElementById('lookupWallet');
-      const addr = input.value.trim();
-      if (!addr || addr.length < 32) {
-        showToast('Enter a valid Solana wallet address', 'error');
-        return;
-      }
-      walletAddress = addr;
-      showWalletStatus(addr);
-
-      // Trigga deposit-processing först
-      try { await fetch(`${API_BASE}/api/process-deposits`, { method: 'POST' }); } catch(e) {}
-
-      loadMyTickets();
-    }
-
-    // === RENDER ===
-    function renderMyTickets() {
-      const c = document.getElementById('ticketsContainer');
-      if (myTickets.length === 0) {
-        c.innerHTML = '<div class="tickets-empty">No tickets yet. Acquire some to enter the draw.</div>';
-        return;
-      }
-      c.innerHTML = `<div class="tickets-grid">${myTickets.map(t => `
-        <div class="ticket-card">
-          <div class="ticket-num">${String(t.number).padStart(4, '0')}</div>
-          <div class="ticket-rd">Round ${t.round_id || currentRound?.round_number || '?'}</div>
-        </div>`).join('')}</div>`;
-    }
-
     // === COUNTDOWN ===
-    let drawTime = null;
-
     function updateCountdown() {
       if (!drawTime) return;
-      const now = new Date();
-      const d = Math.max(0, drawTime - now);
+      const d = Math.max(0, drawTime - new Date());
       const h = Math.floor(d / 3600000);
       const m = Math.floor((d % 3600000) / 60000);
       const s = Math.floor((d % 60000) / 1000);
@@ -1209,7 +945,6 @@
       document.getElementById('cdMinutes').textContent = String(m).padStart(2, '0');
       document.getElementById('cdSeconds').textContent = String(s).padStart(2, '0');
 
-      // Om tiden är ute — polla tills ny runda dyker upp
       if (d === 0 && !window._drawPolling) {
         window._drawPolling = true;
         const drawPoll = setInterval(async () => {
@@ -1222,101 +957,139 @@
       }
     }
 
-    // === DATA LOADING ===
+    // === LOAD CURRENT ROUND ===
     async function loadCurrentRound() {
       try {
-        const r = await (await fetch(`${API_BASE}/api/current-round`)).json();
+        const r = await (await fetch(API_BASE + '/api/current-round')).json();
         currentRound = r;
         const jp = r.jackpot_amount || 0;
+
         document.getElementById('jackpotAmount').textContent = jp.toFixed(2) + ' SOL';
         document.getElementById('jackpotUsd').textContent = '\u2248 $' + (jp * SOL_PRICE_USD).toLocaleString('en-US', { minimumFractionDigits: 2 });
         document.getElementById('roundNumber').textContent = r.round_number || 1;
+        document.getElementById('statTickets').textContent = r.total_tickets || 0;
+        document.getElementById('statAgents').textContent = r.unique_players || 0;
+        document.getElementById('lbRound').textContent = r.round_number || 1;
+
+        if (r.ticket_price) {
+          document.getElementById('statPrice').textContent = r.ticket_price;
+        }
+
         if (r.draw_time) {
           drawTime = new Date(r.draw_time + 'Z');
         }
-        if (r.ticket_price) {
-          TICKET_PRICE = r.ticket_price;
-          document.getElementById('pricePerTicket').textContent = TICKET_PRICE + ' SOL';
-          document.getElementById('mpPrice').textContent = TICKET_PRICE;
-          updateCost();
-        }
+
+        renderLeaderboard(r.top_agents || [], r.total_tickets || 0);
       } catch (e) { console.error(e); }
     }
 
-    async function loadMyTickets() {
-      if (!walletAddress) return;
+    // === RENDER LEADERBOARD ===
+    function renderLeaderboard(agents, totalTickets) {
+      const c = document.getElementById('leaderboardList');
+      if (!agents || agents.length === 0) {
+        c.innerHTML = '<div class="empty-state">No agents in this round yet.</div>';
+        return;
+      }
+      c.innerHTML = '<div class="leaderboard-list">' + agents.map((a, i) => {
+        const pct = totalTickets > 0 ? ((a.ticket_count / totalTickets) * 100).toFixed(1) : '0.0';
+        return '<div class="lb-row">' +
+          '<span class="lb-rank">' + (i + 1) + '</span>' +
+          '<span class="lb-wallet">' + truncateWallet(a.wallet_address) + '</span>' +
+          '<span class="lb-count">' + a.ticket_count + ' tickets</span>' +
+          '<span class="lb-pct">' + pct + '%</span>' +
+        '</div>';
+      }).join('') + '</div>';
+    }
+
+    // === LOAD ACTIVITY ===
+    async function loadActivity() {
       try {
-        const r = await (await fetch(`${API_BASE}/api/my-tickets?wallet=${walletAddress}`)).json();
-        myTickets = r.tickets || [];
-        renderMyTickets();
+        const r = await (await fetch(API_BASE + '/api/recent-activity')).json();
+        const activity = r.activity || [];
+        const c = document.getElementById('activityList');
+        const countEl = document.getElementById('activityCount');
+
+        if (activity.length === 0) {
+          c.innerHTML = '<div class="empty-state">Waiting for agents...</div>';
+          countEl.textContent = '';
+          return;
+        }
+
+        countEl.textContent = activity.length + ' transactions';
+
+        c.innerHTML = '<div class="activity-list">' + activity.map(a => {
+          const count = a.ticket_count;
+          const label = count === 1 ? 'ticket' : 'tickets';
+          return '<div class="activity-row">' +
+            '<div class="activity-left">' +
+              '<span class="activity-wallet">' + truncateWallet(a.wallet_address) + '</span>' +
+              '<span class="activity-action">bought ' + count + ' ' + label + '</span>' +
+            '</div>' +
+            '<span class="activity-time">' + timeAgo(a.latest_purchase) + '</span>' +
+          '</div>';
+        }).join('') + '</div>';
       } catch (e) { console.error(e); }
     }
 
+    // === LOAD HISTORY ===
     async function loadHistory() {
       try {
-        const r = await (await fetch(`${API_BASE}/api/history`)).json();
+        const r = await (await fetch(API_BASE + '/api/history')).json();
         const rounds = r.rounds || [];
         const c = document.getElementById('historyList');
         if (rounds.length === 0) {
-          c.innerHTML = '<div class="tickets-empty">No draws yet. First draw coming soon.</div>';
+          c.innerHTML = '<div class="empty-state">No draws yet. First draw coming soon.</div>';
           return;
         }
-        c.innerHTML = `<div class="history-list">${rounds.map(r => `
-          <div class="history-row" style="flex-wrap: wrap;">
-            <div class="h-left">
-              <span class="h-round">#${r.round_number}</span>
-              <span class="h-number">${String(r.winning_number).padStart(4, '0')}</span>
-            </div>
-            <div class="h-right">
-              <div class="h-pot">${r.jackpot_amount.toFixed(2)} SOL</div>
-              <div class="h-winner ${r.winner_wallet ? 'won' : ''}">${r.winner_wallet
-                ? r.winner_wallet.slice(0, 4) + '...' + r.winner_wallet.slice(-4)
-                : 'No winner \u2014 rolled over'}</div>
-            </div>
-            ${r.draw_blockhash ? `<div class="h-verify" style="width:100%;">
-              Blockhash: <code>${r.draw_blockhash}</code><br>
-              Slot: <code>${r.draw_slot}</code> &middot;
-              SHA256(blockhash + ${r.id}) mod 10000 = <code>${String(r.winning_number).padStart(4, '0')}</code> &middot;
-              <a href="https://explorer.solana.com/block/${r.draw_slot}" target="_blank">Verify on Solana</a>
-            </div>` : ''}
-          </div>`).join('')}</div>`;
+        c.innerHTML = '<div class="history-list">' + rounds.map(function(r) {
+          return '<div class="history-row" style="flex-wrap:wrap;">' +
+            '<div class="h-left">' +
+              '<span class="h-round">#' + r.round_number + '</span>' +
+              '<span class="h-number">' + String(r.winning_number).padStart(4, '0') + '</span>' +
+            '</div>' +
+            '<div class="h-right">' +
+              '<div class="h-pot">' + r.jackpot_amount.toFixed(2) + ' SOL</div>' +
+              '<div class="h-winner ' + (r.winner_wallet ? 'won' : '') + '">' +
+                (r.winner_wallet
+                  ? truncateWallet(r.winner_wallet)
+                  : 'No winner \u2014 rolled over') +
+              '</div>' +
+            '</div>' +
+            (r.draw_blockhash
+              ? '<div class="h-verify" style="width:100%;">' +
+                  'Blockhash: <code>' + r.draw_blockhash + '</code><br>' +
+                  'Slot: <code>' + r.draw_slot + '</code> &middot; ' +
+                  'SHA256(blockhash + ' + r.id + ') mod 10000 = <code>' + String(r.winning_number).padStart(4, '0') + '</code> &middot; ' +
+                  '<a href="https://explorer.solana.com/block/' + r.draw_slot + '" target="_blank">Verify on Solana</a>' +
+                '</div>'
+              : '') +
+          '</div>';
+        }).join('') + '</div>';
       } catch (e) { console.error(e); }
     }
 
-    // Stats-sektion dold tills vi har data
-    async function loadStats() {}
-
     // === TOAST ===
-    function showToast(msg, type = 'info') {
-      const c = document.getElementById('toastContainer');
-      const t = document.createElement('div');
-      t.className = `toast ${type}`;
+    function showToast(msg, type) {
+      type = type || 'info';
+      var c = document.getElementById('toastContainer');
+      var t = document.createElement('div');
+      t.className = 'toast ' + type;
       t.textContent = msg;
       c.appendChild(t);
-      setTimeout(() => t.remove(), 4000);
+      setTimeout(function() { t.remove(); }, 4000);
     }
 
     // === INIT ===
-    updateCost();
     updateCountdown();
     setInterval(updateCountdown, 1000);
+
     loadCurrentRound();
+    loadActivity();
     loadHistory();
-    loadStats();
-    setInterval(() => { loadCurrentRound(); loadHistory(); }, 30000);
 
-    // Visa treasury-adress
-    document.getElementById('treasuryDisplay').textContent = TREASURY_WALLET;
-
-    // Auto-connect Phantom om redan godkänd — fyller i wallet-lookup automatiskt
-    if (window.solana && window.solana.isPhantom) {
-      window.solana.connect({ onlyIfTrusted: true }).then(r => {
-        walletAddress = r.publicKey.toString();
-        showWalletStatus(walletAddress);
-        document.getElementById('lookupWallet').value = walletAddress;
-        loadMyTickets();
-      }).catch(() => {});
-    }
+    setInterval(loadCurrentRound, 10000);
+    setInterval(loadActivity, 15000);
+    setInterval(loadHistory, 60000);
   </script>
 </body>
 </html>

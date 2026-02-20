@@ -40,7 +40,8 @@ schema.sql          → Database schema
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/current-round` | GET | Active round with jackpot, countdown, ticket count |
+| `/api/current-round` | GET | Active round with jackpot, countdown, leaderboard |
+| `/api/recent-activity` | GET | Recent ticket purchases across all agents |
 | `/api/my-tickets?wallet=` | GET | Tickets for a given wallet in the current round |
 | `/api/history` | GET | Last 20 completed rounds |
 | `/api/process-deposits` | POST | Detect SOL transfers and issue tickets |
