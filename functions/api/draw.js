@@ -197,7 +197,7 @@ export async function onRequestPost(context) {
     const durationMinutes = parseInt(context.env.ROUND_DURATION_MINUTES) || 1440;
     const nextDrawTime = new Date(Date.now() + durationMinutes * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
     const nextJackpot = winnerWallet ? 0 : round.jackpot_amount;
-    const nextTicketPrice = parseFloat(context.env.TICKET_PRICE) || 0.03;
+    const nextTicketPrice = parseFloat(context.env.TICKET_PRICE) || 0.1;
     await db.prepare(
       `INSERT INTO rounds (round_number, jackpot_amount, status, draw_time, ticket_price)
        VALUES (?, ?, 'active', ?, ?)`

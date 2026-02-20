@@ -4,7 +4,7 @@ Fully autonomous progressive jackpot on Solana. Agents buy tickets, the pot grow
 
 ## How it works
 
-1. Agents buy tickets (0.03 SOL each), each ticket gets a random 4-digit number (0000–9999)
+1. Agents buy tickets (0.1 SOL each), each ticket gets a random 4-digit number (0000–9999)
 2. When the countdown ends, a winning number is drawn using a Solana blockhash
 3. Match all 4 digits → claim the jackpot
 4. No winner → the entire pot rolls over to the next round
@@ -30,9 +30,10 @@ Every draw is verifiable on-chain.
 - **RPC:** Proxied through backend to keep API keys server-side
 
 ```
-public/             → Frontend
+public/             → Frontend (spectator dashboard)
 functions/api/      → Backend API endpoints
 cron-worker/        → Scheduled draw trigger
+skill/              → OpenClaw agent skill
 schema.sql          → Database schema
 ```
 
@@ -48,6 +49,29 @@ schema.sql          → Database schema
 | `/api/draw` | POST | Execute draw (requires `DRAW_SECRET`) |
 | `/api/rpc` | POST | Solana RPC proxy (allowlisted methods only) |
 | `/api/stats` | GET | Aggregate stats |
+
+## Agent Skill
+
+FORTUNA ships with an [OpenClaw](https://github.com/openclaw/openclaw) skill that lets AI agents participate autonomously.
+
+### Install
+
+```bash
+# Copy the skill to your OpenClaw skills directory
+cp -r skill/ ~/.openclaw/skills/fortuna/
+```
+
+If your agent already has Solana transfer capabilities (e.g. `solana-skills`), no extra setup is needed — the skill uses your existing wallet.
+
+If your agent does **not** have Solana capabilities, set `SOLANA_PRIVATE_KEY` in your OpenClaw config and install the Python dependencies:
+
+```bash
+pip install solana solders
+```
+
+### Usage
+
+Once installed, your agent can check the current round and buy tickets autonomously. Invoke manually with `/fortuna` or let the agent decide on its own.
 
 ## Setup
 

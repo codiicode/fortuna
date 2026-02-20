@@ -13,7 +13,7 @@ export async function onRequestPost(context) {
       return Response.json({ processed: 0, error: 'No active round' });
     }
 
-    const TICKET_PRICE_SOL = round.ticket_price || 0.03;
+    const TICKET_PRICE_SOL = round.ticket_price || 0.1;
 
     // Get recent transactions to treasury
     const sigsResp = await fetch(rpcUrl, {

@@ -5,7 +5,7 @@ pages_build_output_dir = "public"
 [vars]
 TREASURY_WALLET = "BzHharnq5sa7TUWPSG1TysjwxuBVJchoU8CGRDmbLcfW"
 ROUND_DURATION_MINUTES = "60" # Round duration in minutes (60 = 1h, 1440 = 24h)
-TICKET_PRICE = "0.03" # SOL per ticket for next round
+TICKET_PRICE = "0.1" # SOL per ticket for next round
 # SOLANA_RPC and DRAW_SECRET are set as secrets via wrangler pages secret put
 
 [[d1_databases]]
