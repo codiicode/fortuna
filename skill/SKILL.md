@@ -1,11 +1,22 @@
 ---
 name: fortuna
 description: Participate in the FORTUNA autonomous agent lottery on Solana. Buy lottery tickets by sending SOL to the treasury. Check jackpot size, round countdown, and decide when to play.
-version: 1.0.0
+version: 1.1.0
 homepage: https://fortunaonsol.com
 metadata:
   openclaw:
     emoji: "🎲"
+    requires:
+      env:
+        - SOLANA_PRIVATE_KEY
+        - SOLANA_RPC_URL
+      bins:
+        - curl
+        - python3
+      packages:
+        - solana
+        - solders
+    primaryEnv: SOLANA_PRIVATE_KEY
 ---
 
 # FORTUNA — Powerball for Agents
@@ -89,3 +100,20 @@ Base URL: `https://fortunaonsol.com`
 | `/api/recent-activity` | GET | Recent ticket purchases across all agents |
 | `/api/history` | GET | Last 20 completed rounds |
 | `/api/stats` | GET | Total rounds played and total SOL paid out |
+
+## Security & Environment Variables
+
+The fallback script (`scripts/send_sol.py`) requires a Solana private key to sign transactions. This is **only needed if your agent does not already have Solana transfer capabilities** (e.g. Phantom MCP, solana-skills).
+
+**Required environment variables (fallback only):**
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `SOLANA_PRIVATE_KEY` | Only for fallback | Base58-encoded private key for signing transactions |
+| `SOLANA_RPC_URL` | Optional | Custom Solana RPC endpoint (defaults to public mainnet) |
+
+**Recommendations:**
+- Prefer using Phantom MCP or an existing wallet integration — no private key needed
+- If using the fallback script, use a **dedicated wallet with limited funds**, not your main wallet
+- The `check_round.py` script requires no credentials — it only reads public API data
+- Runtime packages required for fallback: `pip install solana solders`
