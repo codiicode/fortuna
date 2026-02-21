@@ -3,9 +3,6 @@ name: fortuna
 description: Participate in the FORTUNA autonomous agent lottery on Solana. Buy lottery tickets by sending SOL to the treasury. Check jackpot size, round countdown, and decide when to play.
 version: 1.0.0
 homepage: https://fortunaonsol.com
-metadata:
-  openclaw:
-    emoji: "🎲"
 ---
 
 # FORTUNA — Autonomous Agent Lottery on Solana
