@@ -1,3 +1,98 @@
+// === BASE58 ===
+const B58 = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+
+function b58decode(str) {
+  const bytes = [];
+  for (const c of str) {
+    const idx = B58.indexOf(c);
+    if (idx < 0) throw new Error('Invalid base58');
+    let carry = idx;
+    for (let j = 0; j < bytes.length; j++) {
+      carry += bytes[j] * 58;
+      bytes[j] = carry & 0xff;
+      carry >>= 8;
+    }
+    while (carry > 0) {
+      bytes.push(carry & 0xff);
+      carry >>= 8;
+    }
+  }
+  for (let i = 0; i < str.length && str[i] === '1'; i++) bytes.push(0);
+  return new Uint8Array(bytes.reverse());
+}
+
+async function sendRefund(rpcUrl, treasurySecretKeyB58, toAddress, amountSol) {
+  const keypairBytes = b58decode(treasurySecretKeyB58);
+  const seed = keypairBytes.slice(0, 32);
+  const fromPubkey = keypairBytes.slice(32, 64);
+  const toPubkey = b58decode(toAddress);
+  const systemProgramId = new Uint8Array(32);
+
+  const bhResp = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0', id: 1,
+      method: 'getLatestBlockhash',
+      params: [{ commitment: 'finalized' }]
+    })
+  });
+  const bhResult = await bhResp.json();
+  const recentBlockhash = b58decode(bhResult.result.value.blockhash);
+
+  const lamports = BigInt(Math.round(amountSol * 1e9));
+  const ixData = new Uint8Array(12);
+  const view = new DataView(ixData.buffer);
+  view.setUint32(0, 2, true);
+  view.setUint32(4, Number(lamports & 0xFFFFFFFFn), true);
+  view.setUint32(8, Number((lamports >> 32n) & 0xFFFFFFFFn), true);
+
+  const message = new Uint8Array(150);
+  let o = 0;
+  message[o++] = 1;
+  message[o++] = 0;
+  message[o++] = 1;
+  message[o++] = 3;
+  message.set(fromPubkey, o); o += 32;
+  message.set(toPubkey, o); o += 32;
+  message.set(systemProgramId, o); o += 32;
+  message.set(recentBlockhash, o); o += 32;
+  message[o++] = 1;
+  message[o++] = 2;
+  message[o++] = 2;
+  message[o++] = 0;
+  message[o++] = 1;
+  message[o++] = 12;
+  message.set(ixData, o);
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'raw', seed, { name: 'Ed25519' }, false, ['sign']
+  );
+  const sig = new Uint8Array(await crypto.subtle.sign('Ed25519', cryptoKey, message));
+
+  const tx = new Uint8Array(1 + 64 + message.length);
+  tx[0] = 1;
+  tx.set(sig, 1);
+  tx.set(message, 65);
+
+  let binary = '';
+  for (let i = 0; i < tx.length; i++) binary += String.fromCharCode(tx[i]);
+
+  const sendResp = await fetch(rpcUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0', id: 1,
+      method: 'sendRawTransaction',
+      params: [btoa(binary), { encoding: 'base64', skipPreflight: false }]
+    })
+  });
+
+  const sendResult = await sendResp.json();
+  if (sendResult.error) throw new Error(sendResult.error.message);
+  return sendResult.result;
+}
+
 export async function onRequestPost(context) {
   const db = context.env.DB;
   const TREASURY = context.env.TREASURY_WALLET;
@@ -40,14 +135,21 @@ export async function onRequestPost(context) {
     ).bind(...sigList).all();
     const existingSet = new Set((existing || []).map(r => r.tx_signature));
 
-    // Filter new (unprocessed, non-failed)
-    const newSigs = signatures.filter(s => !s.err && !existingSet.has(s.signature));
+    // Also check refunded signatures
+    const { results: refunded } = await db.prepare(
+      `SELECT DISTINCT tx_signature FROM refunds WHERE tx_signature IN (${placeholders})`
+    ).bind(...sigList).all();
+    const refundedSet = new Set((refunded || []).map(r => r.tx_signature));
+
+    // Filter new (unprocessed, non-failed, non-refunded)
+    const newSigs = signatures.filter(s => !s.err && !existingSet.has(s.signature) && !refundedSet.has(s.signature));
 
     if (newSigs.length === 0) {
       return Response.json({ processed: 0 });
     }
 
     let totalProcessed = 0;
+    let totalRefunded = 0;
 
     // Get all ticket numbers already used in this round
     const { results: existingTickets } = await db.prepare(
@@ -113,8 +215,26 @@ export async function onRequestPost(context) {
 
         // Check available numbers (max 10,000 unique tickets per round)
         const availableCount = 10000 - usedNumbers.size;
-        if (availableCount <= 0) continue;
+
+        // Round is full — refund the entire deposit
+        if (availableCount <= 0) {
+          if (context.env.TREASURY_PRIVATE_KEY) {
+            try {
+              const refundTx = await sendRefund(rpcUrl, context.env.TREASURY_PRIVATE_KEY, senderWallet, amountSol);
+              await db.prepare(
+                `INSERT INTO refunds (wallet_address, amount_sol, tx_signature, refund_tx, reason) VALUES (?, ?, ?, ?, ?)`
+              ).bind(senderWallet, amountSol, sig.signature, refundTx, 'round_full').run();
+              totalRefunded++;
+              console.log('Refund sent:', refundTx, 'to', senderWallet);
+            } catch (refundErr) {
+              console.error('Refund failed:', refundErr.message);
+            }
+          }
+          continue;
+        }
+
         const actualTicketCount = Math.min(ticketCount, availableCount);
+        const unusedSol = (ticketCount - actualTicketCount) * TICKET_PRICE_SOL;
 
         // Build pool of available numbers and shuffle
         const availableNumbers = [];
@@ -141,13 +261,27 @@ export async function onRequestPost(context) {
 
         await db.batch(batch);
 
-        // Update jackpot (90% jackpot, 7.5% buyback & burn, 2.5% protocol)
-        const addedToJackpot = actualTicketCount * TICKET_PRICE_SOL * 0.9;
+        // Update jackpot (full amount displayed, 90% paid to winner on draw)
+        const addedToJackpot = actualTicketCount * TICKET_PRICE_SOL;
         await db.prepare(
           `UPDATE rounds SET jackpot_amount = jackpot_amount + ? WHERE id = ?`
         ).bind(addedToJackpot, round.id).run();
 
         totalProcessed += actualTicketCount;
+
+        // Refund unused SOL (partial — agent sent more than available slots)
+        if (unusedSol >= TICKET_PRICE_SOL && context.env.TREASURY_PRIVATE_KEY) {
+          try {
+            const refundTx = await sendRefund(rpcUrl, context.env.TREASURY_PRIVATE_KEY, senderWallet, unusedSol);
+            await db.prepare(
+              `INSERT INTO refunds (wallet_address, amount_sol, tx_signature, refund_tx, reason) VALUES (?, ?, ?, ?, ?)`
+            ).bind(senderWallet, unusedSol, sig.signature, refundTx, 'partial_overflow').run();
+            totalRefunded++;
+            console.log('Partial refund sent:', refundTx, unusedSol, 'SOL to', senderWallet);
+          } catch (refundErr) {
+            console.error('Partial refund failed:', refundErr.message);
+          }
+        }
 
       } catch (txErr) {
         // Skip individual tx on failure, continue with next
@@ -155,7 +289,7 @@ export async function onRequestPost(context) {
       }
     }
 
-    return Response.json({ processed: totalProcessed });
+    return Response.json({ processed: totalProcessed, refunded: totalRefunded });
 
   } catch (err) {
     return Response.json({ processed: 0, error: err.message }, { status: 500 });

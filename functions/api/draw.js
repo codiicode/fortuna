@@ -176,15 +176,16 @@ export async function onRequestPost(context) {
        WHERE id = ?`
     ).bind(winningNumber, winnerWallet, blockhash, slot, round.id).run();
 
-    // Auto-payout to winner
+    // Auto-payout to winner (90% of jackpot, 7.5% community, 2.5% protocol)
     let payoutTx = null;
-    if (winnerWallet && round.jackpot_amount > 0 && context.env.TREASURY_PRIVATE_KEY) {
+    const payoutAmount = round.jackpot_amount * 0.9;
+    if (winnerWallet && payoutAmount > 0 && context.env.TREASURY_PRIVATE_KEY) {
       try {
         payoutTx = await sendPayout(
           rpcUrl,
           context.env.TREASURY_PRIVATE_KEY,
           winnerWallet,
-          round.jackpot_amount
+          payoutAmount
         );
         console.log('Payout sent:', payoutTx);
       } catch (payErr) {
