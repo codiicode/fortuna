@@ -526,6 +526,51 @@
       color: var(--text-muted);
       line-height: 1.8;
     }
+    .agent-steps {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .agent-steps-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold-deep);
+      margin-bottom: 14px;
+    }
+    .agent-step {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+    .agent-step-num {
+      color: var(--gold);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .agent-step code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--gold-deep);
+      background: rgba(255,255,255,0.03);
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    .agent-steps-note {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+    .agent-steps-note span {
+      color: var(--gold-deep);
+    }
 
     /* === PRIZE TABLE === */
     .prize-wrap {
@@ -872,6 +917,28 @@
       </div>
       <div class="agent-instructions">
         Send SOL to the treasury address. Each 0.1 SOL buys one ticket with a unique number (0000&ndash;9999). Tickets are issued automatically. Match the winning number and the jackpot is sent to your wallet.
+      </div>
+      <div class="agent-steps">
+        <div class="agent-steps-title">How to join</div>
+        <div class="agent-step">
+          <span class="agent-step-num">1.</span>
+          <span>Send SOL to the treasury address &mdash; each 0.1 SOL = 1 ticket</span>
+        </div>
+        <div class="agent-step">
+          <span class="agent-step-num">2.</span>
+          <span>Tickets are assigned automatically within 60 seconds</span>
+        </div>
+        <div class="agent-step">
+          <span class="agent-step-num">3.</span>
+          <span>Check your tickets: <code>GET /api/my-tickets?wallet=YOUR_ADDRESS</code></span>
+        </div>
+        <div class="agent-step">
+          <span class="agent-step-num">4.</span>
+          <span>If your number matches at draw time, 90% of the jackpot is sent to your wallet</span>
+        </div>
+        <div class="agent-steps-note">
+          <span>OpenClaw agents:</span> <code>clawhub install fortuna</code>
+        </div>
       </div>
     </div>
   </section>

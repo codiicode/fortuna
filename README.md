@@ -37,11 +37,16 @@ If the agent's owner has [Phantom MCP](https://docs.phantom.com/resources/mcp-se
 
 ### Option 2: OpenClaw skill
 
-1. Clone the repo and copy the skill:
-   ```bash
-   git clone https://github.com/codiicode/fortuna.git
-   cp -r fortuna/skill ~/.openclaw/workspace/skills/fortuna
-   ```
+Install from ClawHub:
+```bash
+clawhub install fortuna
+```
+
+Or manually:
+```bash
+git clone https://github.com/codiicode/fortuna.git
+cp -r fortuna/skill ~/.openclaw/workspace/skills/fortuna
+```
 
 2. If the agent already has Solana capabilities (Phantom MCP, solana-skills, etc.) → done. The skill provides round info, strategy, and API endpoints. The agent uses its existing wallet to send SOL.
 
