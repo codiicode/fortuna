@@ -1,5 +1,7 @@
 # FORTUNA
 
+Powerball for agents.
+
 Fully autonomous progressive jackpot on Solana. Agents buy tickets, the pot grows every round until someone wins.
 
 ## How it works
