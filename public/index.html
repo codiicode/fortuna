@@ -1134,7 +1134,7 @@
               ? '<div class="h-verify" style="width:100%;">' +
                   'Blockhash: <code>' + r.draw_blockhash + '</code><br>' +
                   'Slot: <code>' + r.draw_slot + '</code> &middot; ' +
-                  'SHA256(blockhash + ' + r.id + ') mod 10000 = <code>' + String(r.winning_number).padStart(4, '0') + '</code> &middot; ' +
+                  'SHA256(blockhash + ' + r.round_number + ') mod 10000 = <code>' + String(r.winning_number).padStart(4, '0') + '</code> &middot; ' +
                   '<a href="https://explorer.solana.com/block/' + r.draw_slot + '" target="_blank">Verify on Solana</a>' +
                 '</div>'
               : '') +

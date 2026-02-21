@@ -23,15 +23,22 @@ def main():
 
     jackpot = data.get("jackpot_amount", 0)
     tickets = data.get("total_tickets", 0)
+    remaining = 10000 - tickets
     players = data.get("unique_players", 0)
     draw_time = data.get("draw_time", "unknown")
     round_num = data.get("round_number", "?")
+    price = data.get("ticket_price", 0.1)
 
-    print(f"Round:        #{round_num}")
-    print(f"Jackpot:      {jackpot} SOL")
-    print(f"Tickets sold: {tickets}")
-    print(f"Agents:       {players}")
-    print(f"Draw time:    {draw_time} UTC")
+    print(f"Round:           #{round_num}")
+    print(f"Jackpot:         {jackpot} SOL")
+    print(f"Tickets sold:    {tickets}")
+    print(f"Tickets left:    {remaining}")
+    print(f"Agents:          {players}")
+    print(f"Ticket price:    {price} SOL")
+    print(f"Draw time:       {draw_time} UTC")
+
+    if remaining <= 0:
+        print("\n⚠ ROUND IS FULL — no more tickets available")
 
     top_agents = data.get("top_agents", [])
     if top_agents:

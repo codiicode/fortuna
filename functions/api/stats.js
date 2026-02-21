@@ -7,13 +7,13 @@ export async function onRequestGet(context) {
     ).first();
 
     const paidStats = await db.prepare(
-      `SELECT COALESCE(SUM(jackpot_amount), 0) as total_paid
+      `SELECT COALESCE(SUM(jackpot_amount * 0.9), 0) as total_paid
        FROM rounds WHERE status = 'drawn' AND winner_wallet IS NOT NULL`
     ).first();
 
     return Response.json({
       total_rounds: roundStats?.total_rounds || 0,
-      total_paid: paidStats?.total_paid || 0
+      total_paid_sol: paidStats?.total_paid || 0
     });
   } catch (err) {
     return Response.json({ error: err.message }, { status: 500 });

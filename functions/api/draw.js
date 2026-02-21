@@ -151,7 +151,7 @@ export async function onRequestPost(context) {
 
     // Winning number: SHA256(blockhash + roundId) mod 10000
     const encoder = new TextEncoder();
-    const data = encoder.encode(blockhash + ':' + round.id);
+    const data = encoder.encode(blockhash + ':' + round.round_number);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = new Uint8Array(hashBuffer);
     const hashHex = Array.from(hashArray).map(b => b.toString(16).padStart(2, '0')).join('');
